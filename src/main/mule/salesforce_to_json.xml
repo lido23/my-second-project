@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4f60e00a-d166-485f-b7f4-643a1a83f04c" >
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="5ba2029d-b6bf-4a0e-8edb-094d42178f57" >
+		<salesforce:cached-basic-connection username="lidiya_developer7125@salesforce.com" password="Jesus7125@" securityToken="jQcMPWCXF5p39BYs3uCWSKq3n" />
+	</salesforce:sfdc-config>
+	<flow name="salesforce_to_jsonFlow" doc:id="08a126fd-74c9-487b-8379-3ab4ecc88551" >
+		<http:listener doc:name="Listener" doc:id="5efdc53c-0a8b-4fb2-8a93-27828dd194dd" config-ref="HTTP_Listener_config" path="/"/>
+		<logger level="INFO" doc:name="Logger" doc:id="1fe4493f-5b9d-480b-8143-364b6400d175" message="#[payload]" />
+		<salesforce:query doc:name="Query" doc:id="bf41c03b-0ca3-4709-956f-f98e4e66aff2" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >select name, industry, type from account</salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="f56c1d39-4a2f-453b-aac4-9b1aa7a4a466" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	accname: payload01.Name default "",
+	industry: payload01.Industry default "",
+	"type": payload01.Type default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d305fbf7-0dd7-41c7-951d-1f2408a2ad5b" message="#[payload]"/>
+	</flow>
+</mule>
